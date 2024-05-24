@@ -5,12 +5,14 @@ import { ProjectService } from './project.service';
 import { Project, ProjectSchema } from './project.schema';
 import { User, UserSchema } from '../user/user.schema';
 import { AuthModule } from '../auth/auth.module';
+import { UserModule } from '../user/user.module'; 
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Project.name, schema: ProjectSchema }]),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     AuthModule,
+    UserModule,
   ],
   controllers: [ProjectController],
   providers: [ProjectService],

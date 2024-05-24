@@ -40,6 +40,10 @@ export class UserService {
         return { message: 'Profile updated successfully' };
       }
 
+      async getUserByEmail(email: string): Promise<User> {
+        return this.userModel.findOne({ email });
+      }
+
       async deleteProfile(userId: string): Promise<{ message: string }> {
         const user = await this.userModel.findByIdAndDelete(userId);
       

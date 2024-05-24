@@ -1,7 +1,9 @@
 // user.controller.ts
-import { Controller, Get, UseGuards, Request, Body, Patch, Delete, Post } from '@nestjs/common';
+import { Controller, Get, UseGuards, Request, Body, Patch, Delete, Post, Param } from '@nestjs/common';
 import { UserService } from './user.service';
 import { AuthGuard } from '@nestjs/passport';
+import { User } from './user.schema';
+import { NotFoundException } from '@nestjs/common';
 
 @Controller('user')
 export class UserController {
@@ -40,5 +42,13 @@ export class UserController {
   async logout(@Request() req: any): Promise<{ message: string }> {
     const result = await this.userService.logout(req.user.id);
     return result;
+  }
+  @Get('/email/:email')
+  async getUserByEmail(@Param('email') email: string): Promise<User> {
+    const user = await this.userService.getUserByEmail(email);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
   }
 }

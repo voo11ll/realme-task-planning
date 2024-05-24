@@ -1,11 +1,15 @@
-import { Controller, Post, Patch, Delete, Get, Body, Param, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Patch, Delete, Get, Body, Param, UseGuards, Request, NotFoundException } from '@nestjs/common';
 import { ProjectService } from './project.service';
+import { UserService } from '../user/user.service';
 import { AuthGuard } from '@nestjs/passport';
 
 @Controller('project')
 @UseGuards(AuthGuard())
 export class ProjectController {
-  constructor(private readonly projectService: ProjectService) {}
+  constructor(
+    private readonly projectService: ProjectService,
+    private readonly userService: UserService,
+  ) {}
 
   @Post()
   async createProject(@Body() body: { name: string; participantEmails: string[] }) {
@@ -24,7 +28,11 @@ export class ProjectController {
   @Post('/:id/participant')
   async addParticipant(@Param('id') projectId: string, @Body() body: { participantEmail: string }) {
     const { participantEmail } = body;
-    const project = await this.projectService.addParticipant(projectId, participantEmail);
+    const user = await this.userService.getUserByEmail(participantEmail);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    const project = await this.projectService.addParticipant(projectId, user);
     return { message: 'Participant added successfully', project };
   }
 

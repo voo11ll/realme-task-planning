@@ -36,18 +36,13 @@ export class ProjectService {
     return project.save();
   }
 
-  async addParticipant(projectId: string, participantEmail: string): Promise<Project> {
+  async addParticipant(projectId: string, user: User): Promise<Project> {
     const project = await this.projectModel.findById(projectId);
     if (!project) {
       throw new NotFoundException('Project not found');
     }
-
-    const participant = await this.userModel.findOne({ email: participantEmail });
-    if (!participant) {
-      throw new NotFoundException('User not found');
-    }
-
-    project.participants.push(participant._id);
+    
+    project.participants.push(user._id);
 
     return project.save();
   }
