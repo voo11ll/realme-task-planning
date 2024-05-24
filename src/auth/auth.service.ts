@@ -26,8 +26,7 @@ export class AuthService {
         return { message: 'Email is already registered and verified.', statusCode: 400 };
       }
 
-      // Пользователь существует, но не верифицирован      
-      // Обновляем все поля, кроме email
+      // User exists but is not verified
       const verificationCode = generateVerificationCode();
       const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -37,13 +36,11 @@ export class AuthService {
       existingUser.isVerified = false;
       
       await existingUser.save();
-      // Можно отправить новое письмо с кодом подтверждения
+
       await this.sendVerificationEmail(existingUser.email, verificationCode);
 
       return { message: 'Email already registered. New verification code sent.', statusCode: 201 };
     }
-
-    // Пользователь не существует или уже верифицирован, создаем нового пользователя
 
     const verificationCode = generateVerificationCode();
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -57,7 +54,6 @@ export class AuthService {
         isVerified: false,
       });
 
-// Отправляем код подтверждения на электронную почту
       await this.sendVerificationEmail(user.email, verificationCode);
 
       const token = this.jwtService.sign({ id: user._id });
@@ -74,7 +70,7 @@ export class AuthService {
     const user = await this.userModel.findOne({ email });
 
     if (!user) {
-      throw new UnauthorizedException('Invalid email or password');
+      throw new UnauthorizedException('Invalid email');
     }
 
     if (!user.isVerified) {
@@ -84,7 +80,7 @@ export class AuthService {
     const isPasswordMatched = await bcrypt.compare(password, user.password);
 
     if (!isPasswordMatched) {
-      throw new UnauthorizedException('Invalid email or password');
+      throw new UnauthorizedException('Invalid password');
     }
 
     const token = this.jwtService.sign({ id: user._id });
@@ -99,7 +95,7 @@ export class AuthService {
       throw new NotFoundException('Invalid verification code');
     }
 
-// Помечаем аккаунт как активированный
+    // Помечаем аккаунт как активированный
     user.isVerified = true;
     await user.save();
     
@@ -125,7 +121,7 @@ export class AuthService {
     user.verificationCode = newVerificationCode;
     await user.save();
 
-  // Отправляем новый код подтверждения
+    // Отправляем новый код подтверждения
     await this.sendVerificationEmail(user.email, newVerificationCode);
   
     return { message: 'New verification code sent.', statusCode: 200 };
@@ -151,14 +147,14 @@ export class AuthService {
       }
     });
 
- // Опции письма
+    // Опции письма
     const mailOptions = {
       from: process.env.SMTP_USER,
       to: email,
       subject: 'Email Verification',
       text: `Your verification code is: ${verificationCode}`,
     };
-// Отправляем письмо
+    // Отправляем письмо
     await transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
         console.error('Error:', error);
