@@ -12,7 +12,7 @@ export class ProjectService {
   ) {}
 
   async createProject(name: string, participantEmails: string[]): Promise<Project> {
-    const participants = await this.userModel.find({ email: { $in: participantEmails } });
+    const participants = await this.userModel.find({ email: { $in: participantEmails }, isVerified: true });
 
     const project = new this.projectModel({
       name,
@@ -28,7 +28,7 @@ export class ProjectService {
       throw new NotFoundException('Project not found');
     }
 
-    const participants = await this.userModel.find({ email: { $in: participantEmails } });
+    const participants = await this.userModel.find({ email: { $in: participantEmails }, isVerified: true });
 
     project.name = name;
     project.participants = participants.map(participant => participant._id);
@@ -41,10 +41,16 @@ export class ProjectService {
     if (!project) {
       throw new NotFoundException('Project not found');
     }
-    
-    project.participants.push(user._id);
+
+    if (!project.participants.includes(user._id)) {
+      project.participants.push(user._id);
+    }
 
     return project.save();
+  }
+
+  async getProjectById(projectId: string): Promise<Project> {
+    return this.projectModel.findById(projectId).populate('participants', 'name email');
   }
 
   async getUserProjects(userId: string): Promise<Project[]> {
@@ -57,7 +63,7 @@ export class ProjectService {
       throw new NotFoundException('Project not found');
     }
 
-    const participant = await this.userModel.findOne({ email: participantEmail });
+    const participant = await this.userModel.findOne({ email: participantEmail, isVerified: true });
     if (!participant) {
       throw new NotFoundException('User not found');
     }

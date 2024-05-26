@@ -36,6 +36,15 @@ export class ProjectController {
     return { message: 'Participant added successfully', project };
   }
 
+  @Get('/:id')
+  async getProjectById(@Param('id') projectId: string) {
+    const project = await this.projectService.getProjectById(projectId);
+    if (!project) {
+      throw new NotFoundException('Project not found');
+    }
+    return project;
+  }
+
   @Get('/user-projects')
   async getUserProjects(@Request() req: any) {
     const userId = req.user.id;

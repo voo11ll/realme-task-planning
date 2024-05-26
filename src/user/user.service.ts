@@ -41,7 +41,12 @@ export class UserService {
       }
 
       async getUserByEmail(email: string): Promise<User> {
+        const user = await this.userModel.findOne({ email, isVerified: true}).exec();
+        if (!user) {
+          throw new NotFoundException('User not found');
+        }
         return this.userModel.findOne({ email });
+        // return user;
       }
 
       async deleteProfile(userId: string): Promise<{ message: string }> {
