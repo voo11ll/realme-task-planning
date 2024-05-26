@@ -36,6 +36,13 @@ export class ProjectController {
     return { message: 'Participant added successfully', project };
   }
 
+  @Get('/user-projects')
+  async getUserProjects(@Request() req: any) {
+    const userId = req.user.id;
+    const projects = await this.projectService.getUserProjects(userId);
+    return { projects };
+  }
+
   @Get('/:id')
   async getProjectById(@Param('id') projectId: string) {
     const project = await this.projectService.getProjectById(projectId);
@@ -43,13 +50,6 @@ export class ProjectController {
       throw new NotFoundException('Project not found');
     }
     return project;
-  }
-
-  @Get('/user-projects')
-  async getUserProjects(@Request() req: any) {
-    const userId = req.user.id;
-    const projects = await this.projectService.getUserProjects(userId);
-    return { projects };
   }
 
   @Delete('/:id/participant')
