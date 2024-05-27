@@ -99,7 +99,7 @@ export class AuthService {
     user.isVerified = true;
     await user.save();
     
-    return { message: 'Email validate successful', statusCode: 201 }; // 201 - Created
+    return { message: 'Email verified successful', statusCode: 201 }; // 201 - Created
   }catch (error) {
       console.error('Error during sign-up:', error);
       return { message: 'Error: Email not validated', statusCode: 500 }; // 500 - Internal Server Error
@@ -125,6 +125,16 @@ export class AuthService {
     await this.sendVerificationEmail(user.email, newVerificationCode);
   
     return { message: 'New verification code sent.', statusCode: 200 };
+  }
+
+  async checkEmailExists(email: string): Promise<{ exists: boolean, isVerified: boolean }> {
+    const user = await this.userModel.findOne({ email });
+
+    if (!user) {
+      return { exists: false, isVerified: false };
+    }
+
+    return { exists: true, isVerified: user.isVerified };
   }
 
   private async sendVerificationEmail(email: string, verificationCode: string): Promise<void> {
