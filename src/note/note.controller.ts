@@ -5,6 +5,7 @@ import { CreateNoteDto } from './dto/create-note.dto';
 import { UpdateNoteDto } from './dto/update-note.dto';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { UpdateTodoDto } from './dto/update-todo.dto';
+import { Note, Todo } from './note.schema';
 
 @Controller('note')
 export class NoteController {
@@ -15,10 +16,10 @@ export class NoteController {
   async createNote(
     @Request() req: any,
     @Body() createNoteDto: CreateNoteDto
-  ): Promise<{ message: string }> {
+  ): Promise<{ message: string; createdNote: Note }> {
     const userId = req.user.id;
-    await this.noteService.createNote(userId, createNoteDto);
-    return { message: 'Note created successfully' };
+    const createdNote = await this.noteService.createNote(userId, createNoteDto);
+    return { message: 'Note created successfully', createdNote };
   }
 
   @UseGuards(AuthGuard())
@@ -26,9 +27,9 @@ export class NoteController {
   async updateNote(
     @Param('id') noteId: string,
     @Body() updateNoteDto: UpdateNoteDto
-  ): Promise<{ message: string }> {
-    await this.noteService.updateNote(noteId, updateNoteDto);
-    return { message: 'Note updated successfully' };
+  ): Promise<{ message: string; updatedNote: Note }> {
+    const updatedNote = await this.noteService.updateNote(noteId, updateNoteDto);
+    return { message: 'Note updated successfully', updatedNote };
   }
 
   @UseGuards(AuthGuard())
@@ -57,27 +58,28 @@ export class NoteController {
     return { message: 'Note deleted successfully' };
   }
 
-  // Методы для работы с todo
+
   @UseGuards(AuthGuard())
   @Post(':noteId/todo')
   async createTodo(
     @Param('noteId') noteId: string,
     @Body() createTodoDto: CreateTodoDto
-  ): Promise<{ message: string }> {
-    await this.noteService.createTodo(noteId, createTodoDto);
-    return { message: 'Todo created successfully' };
+  ): Promise<{ message: string; createdTodo: Todo }> {
+    const createdTodo = await this.noteService.createTodo(noteId, createTodoDto);
+    return { message: 'Todo created successfully', createdTodo };
   }
-
+  
   @UseGuards(AuthGuard())
   @Patch(':noteId/todo/:todoId')
   async updateTodo(
     @Param('noteId') noteId: string,
     @Param('todoId') todoId: string,
     @Body() updateTodoDto: UpdateTodoDto
-  ): Promise<{ message: string }> {
-    await this.noteService.updateTodo(noteId, todoId, updateTodoDto);
-    return { message: 'Todo updated successfully' };
+  ): Promise<{ message: string; updatedTodo: Todo }> {
+    const updatedTodo = await this.noteService.updateTodo(noteId, todoId, updateTodoDto);
+    return { message: 'Todo updated successfully', updatedTodo };
   }
+  
 
   @UseGuards(AuthGuard())
   @Delete(':noteId/todo/:todoId')
