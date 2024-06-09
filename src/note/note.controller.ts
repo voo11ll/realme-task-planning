@@ -34,20 +34,23 @@ export class NoteController {
 
   @UseGuards(AuthGuard())
   @Get()
-  async getAllNotes(@Request() req: any): Promise<{ id: string; title: string; description: string; todos: { title: string; description: string; isCompleted: boolean }[] }[]> {
+  async getAllNotes(@Request() req: any): Promise<{ id: string; title: string; description: string; createdAt: Date; todos: { title: string; description: string; isCompleted: boolean; createdAt: Date }[] }[]> {
     const userId = req.user.id;
     const notes = await this.noteService.getAllNotes(userId);
     return notes.map(note => ({
       id: note._id,
       title: note.title,
       description: note.description,
+      createdAt: note.createdAt,
       todos: note.todos.map(todo => ({
         title: todo.title,
         description: todo.description,
         isCompleted: todo.isCompleted,
+        createdAt: todo.createdAt,
       })),
     }));
   }
+
 
   @UseGuards(AuthGuard())
   @Delete(':id')
