@@ -14,12 +14,23 @@ export class NoteService {
     private noteModel: Model<Note>,
   ) {}
 
+  // async createNote(userId: string, createNoteDto: CreateNoteDto): Promise<Note> {
+  //   const newNote = new this.noteModel({
+  //     userId,
+  //     ...createNoteDto,
+  //     isCompleted: false,
+  //     todos: [],
+  //   });
+  //   return newNote.save();
+  // }
+
   async createNote(userId: string, createNoteDto: CreateNoteDto): Promise<Note> {
+    const { todos, ...noteDetails } = createNoteDto;
     const newNote = new this.noteModel({
       userId,
-      ...createNoteDto,
+      ...noteDetails,
       isCompleted: false,
-      todos: [],
+      todos: todos || [],
     });
     return newNote.save();
   }
