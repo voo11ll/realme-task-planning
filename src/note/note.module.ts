@@ -8,7 +8,7 @@ import { AuthModule } from '../auth/auth.module';
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Note.name, schema: NoteSchema }]),
-    AuthModule, // Подключаем AuthModule для доступа к AuthService
+    AuthModule,
   ],
   controllers: [NoteController],
   providers: [NoteService],

@@ -95,14 +95,13 @@ export class AuthService {
       throw new NotFoundException('Invalid verification code');
     }
 
-    // Помечаем аккаунт как активированный
     user.isVerified = true;
     await user.save();
     
-    return { message: 'Email verified successful', statusCode: 201 }; // 201 - Created
+    return { message: 'Email verified successful', statusCode: 201 }; 
   }catch (error) {
       console.error('Error during sign-up:', error);
-      return { message: 'Error: Email not validated', statusCode: 500 }; // 500 - Internal Server Error
+      return { message: 'Error: Email not validated', statusCode: 500 };
   }
 
   async resendVerificationCode(email: string): Promise<{ message: string, statusCode: number }> {
@@ -116,12 +115,10 @@ export class AuthService {
       return { message: 'User is already verified.', statusCode: 400 };
     }
 
-   // Генерируем новый код и сохраняем его в базу данных
     const newVerificationCode = generateVerificationCode();
     user.verificationCode = newVerificationCode;
     await user.save();
 
-    // Отправляем новый код подтверждения
     await this.sendVerificationEmail(user.email, newVerificationCode);
   
     return { message: 'New verification code sent.', statusCode: 200 };
@@ -138,7 +135,6 @@ export class AuthService {
   }
 
   private async sendVerificationEmail(email: string, verificationCode: string): Promise<void> {
-     // Создаем транспорт для отправки электронных писем (замените значения на свои)
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: parseInt(process.env.SMTP_PORT, 10),
@@ -157,14 +153,13 @@ export class AuthService {
       }
     });
 
-    // Опции письма
     const mailOptions = {
       from: process.env.SMTP_USER,
       to: email,
       subject: 'Email Verification',
       text: `Your verification code is: ${verificationCode}`,
     };
-    // Отправляем письмо
+
     await transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
         console.error('Error:', error);
@@ -176,7 +171,6 @@ export class AuthService {
   }
 }
 
-// Генерация случайного кода подтверждения
 function generateVerificationCode(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
