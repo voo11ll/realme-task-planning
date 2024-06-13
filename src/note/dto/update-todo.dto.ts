@@ -1,15 +1,37 @@
+// import { IsString, IsOptional, IsBoolean } from 'class-validator';
+
+// export class UpdateTodoDto {
+//   @IsOptional()
+//   @IsString()
+//   readonly title?: string;
+
+//   @IsOptional()
+//   @IsString()
+//   readonly description?: string;
+
+//   @IsOptional()
+//   @IsBoolean()
+//   readonly isCompleted?: boolean;
+// }
+
+
+// update-todo.dto.ts
 import { IsString, IsOptional, IsBoolean } from 'class-validator';
 
 export class UpdateTodoDto {
-  @IsOptional()
   @IsString()
+  @IsOptional()
+  readonly _id?: string;
+
+  @IsString()
+  @IsOptional()
   readonly title?: string;
 
-  @IsOptional()
   @IsString()
+  @IsOptional()
   readonly description?: string;
 
-  @IsOptional()
   @IsBoolean()
+  @IsOptional()
   readonly isCompleted?: boolean;
 }

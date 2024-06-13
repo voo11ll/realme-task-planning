@@ -35,6 +35,23 @@ export class NoteService {
     return newNote.save();
   }
 
+  // async updateNote(noteId: string, updateNoteDto: UpdateNoteDto): Promise<Note> {
+  //   const existingNote = await this.noteModel.findById(noteId);
+
+  //   if (!existingNote) {
+  //     throw new NotFoundException('Note not found');
+  //   }
+
+  //   if (updateNoteDto.title) {
+  //     existingNote.title = updateNoteDto.title;
+  //   }
+  //   if (updateNoteDto.description) {
+  //     existingNote.description = updateNoteDto.description;
+  //   }
+
+  //   return existingNote.save();
+  // }
+
   async updateNote(noteId: string, updateNoteDto: UpdateNoteDto): Promise<Note> {
     const existingNote = await this.noteModel.findById(noteId);
 
@@ -47,6 +64,25 @@ export class NoteService {
     }
     if (updateNoteDto.description) {
       existingNote.description = updateNoteDto.description;
+    }
+
+    if (updateNoteDto.todos) {
+      updateNoteDto.todos.forEach((updatedTodo) => {
+        const todo = existingNote.todos.id(updatedTodo._id);
+        if (todo) {
+          if (updatedTodo.title) {
+            todo.title = updatedTodo.title;
+          }
+          if (updatedTodo.description) {
+            todo.description = updatedTodo.description;
+          }
+          if (updatedTodo.isCompleted !== undefined) {
+            todo.isCompleted = updatedTodo.isCompleted;
+          }
+        } else {
+          existingNote.todos.push(updatedTodo);
+        }
+      });
     }
 
     return existingNote.save();
