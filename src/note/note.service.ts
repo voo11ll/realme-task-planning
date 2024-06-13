@@ -15,11 +15,12 @@ export class NoteService {
   ) {}
 
   async createNote(userId: string, createNoteDto: CreateNoteDto): Promise<Note> {
+    const { todos, ...noteDetails } = createNoteDto;
     const newNote = new this.noteModel({
       userId,
-      ...createNoteDto,
+      ...noteDetails,
       isCompleted: false,
-      todos: [],
+      todos: todos || [],
     });
     return newNote.save();
   }

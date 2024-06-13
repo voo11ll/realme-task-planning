@@ -1,4 +1,4 @@
-import { Controller, Post, Patch, Delete, Get, Body, Param, UseGuards, Request, NotFoundException } from '@nestjs/common';
+import { Controller, Post, Patch, Delete, Get, Body, Param, UseGuards, Request, Query, NotFoundException } from '@nestjs/common';
 import { ProjectService } from './project.service';
 import { TaskService } from '../task/task.service';
 import { UserService } from '../user/user.service';
@@ -99,8 +99,11 @@ export class ProjectController {
   }
 
   @Get('/:projectId/tasks')
-  async getProjectTasks(@Param('projectId') projectId: string) {
-    const tasks = await this.taskService.getProjectTasks(projectId);
+  async getProjectTasks(
+    @Param('id') projectId: string,
+    @Query('viewType') viewType: string
+  ) {
+    const tasks = await this.taskService.getProjectTasks(projectId, viewType || 'backlog');
     return { tasks };
   }
 }

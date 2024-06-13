@@ -1,11 +1,18 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+import { CreateTodoDto } from './create-todo.dto';
 
 export class CreateNoteDto {
-  @IsNotEmpty()
   @IsString()
+  @IsNotEmpty()
   readonly title: string;
 
-  @IsNotEmpty()
   @IsString()
-  readonly description: string;
+  @IsOptional()
+  readonly description?: string;
+
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => CreateTodoDto)
+  readonly todos?: CreateTodoDto[];
 }

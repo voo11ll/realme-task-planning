@@ -33,6 +33,9 @@ export class Task extends Document {
 
   @Prop({ default: false })
   isPersonal: boolean; 
+
+  @Prop({ default: 'backlog' }) // Добавляем это поле
+  viewType: string; // 'backlog' или 'kanban'
 }
 
 export const TaskSchema = SchemaFactory.createForClass(Task);

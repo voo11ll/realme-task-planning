@@ -23,6 +23,7 @@ export class TaskService {
     assigneeEmail?: string;
     projectId?: string;
     isPersonal?: boolean;
+    viewType?: string; 
   }): Promise<Task> {
     const {
       title,
@@ -34,6 +35,7 @@ export class TaskService {
       assigneeEmail,
       projectId,
       isPersonal,
+      viewType = 'backlog'
     } = taskData;
 
     let assignee: User | null = null;
@@ -64,6 +66,7 @@ export class TaskService {
       assignee: assignee ? assignee._id : undefined,
       project: projectId ? new Types.ObjectId(projectId) : undefined,
       isPersonal: isPersonal || false,
+      viewType 
     });
 
     return task.save();
@@ -105,8 +108,8 @@ export class TaskService {
     await this.taskModel.findByIdAndDelete(taskId);
   }
 
-  async getProjectTasks(projectId: string): Promise<Task[]> {
-    return this.taskModel.find({ project: new Types.ObjectId(projectId) });
+  async getProjectTasks(projectId: string, viewType: string): Promise<Task[]> {
+    return this.taskModel.find({ project: new Types.ObjectId(projectId), viewType });
   }
 
   async getUserPersonalTasks(userId: string): Promise<Task[]> {

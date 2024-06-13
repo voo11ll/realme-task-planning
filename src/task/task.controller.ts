@@ -1,4 +1,4 @@
-import { Controller, Post, Patch, Delete, Get, Body, Param, UseGuards, Request, NotFoundException } from '@nestjs/common';
+import { Controller, Post, Patch, Delete, Get, Body, Param, UseGuards, Request, Query, NotFoundException } from '@nestjs/common';
 import { TaskService } from './task.service';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -18,6 +18,7 @@ export class TaskController {
     assigneeEmail?: string;
     projectId?: string;
     isPersonal?: boolean;
+    viewType?: string;
   }) {
     const task = await this.taskService.createTask(body);
     return { message: 'Task created successfully', task };
@@ -44,8 +45,8 @@ export class TaskController {
   }
 
   @Get('/project/:projectId')
-  async getProjectTasks(@Param('projectId') projectId: string) {
-    const tasks = await this.taskService.getProjectTasks(projectId);
+  async getProjectTasks(@Param('projectId') projectId: string, @Query('viewType') viewType: string) {
+    const tasks = await this.taskService.getProjectTasks(projectId, viewType || 'backlog');
     return { tasks };
   }
 
