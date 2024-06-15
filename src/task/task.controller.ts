@@ -56,4 +56,35 @@ export class TaskController {
     const tasks = await this.taskService.getUserPersonalTasks(userId);
     return { tasks };
   }
+
+  @Post('/custom-status/:projectId')
+  async createCustomStatus(@Param('projectId') projectId: string, @Body('status') status: string) {
+    await this.taskService.createCustomStatus(projectId, status);
+    return { message: 'Custom status created successfully' };
+  }
+
+  @Patch('/custom-status/:projectId')
+  async updateCustomStatus(@Param('projectId') projectId: string, @Body() body: { oldStatus: string, newStatus: string }) {
+    await this.taskService.updateCustomStatus(projectId, body.oldStatus, body.newStatus);
+    return { message: 'Custom status updated successfully' };
+  }
+
+  @Delete('/custom-status/:projectId')
+  async deleteCustomStatus(@Param('projectId') projectId: string, @Body('status') status: string) {
+    await this.taskService.deleteCustomStatus(projectId, status);
+    return { message: 'Custom status deleted successfully' };
+  }
+
+  @Get('/custom-status/:projectId')
+  async getCustomStatuses(@Param('projectId') projectId: string) {
+    const statuses = await this.taskService.getCustomStatuses(projectId);
+    return { statuses };
+  }
+
+  // @Get('/project/:projectId/users')
+  // async getProjectUsers(@Param('projectId') projectId: string) {
+  //   const users = await this.taskService.getProjectUsers(projectId);
+  //   return { users };
+  // }
 }
+

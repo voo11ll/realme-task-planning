@@ -117,4 +117,39 @@ export class ProjectService {
     project.tasks = project.tasks.filter(task => task.toString() !== taskId);
     return project.save();
   }
+
+  async createCustomStatus(projectId: string, status: string): Promise<Project> {
+    const project = await this.projectModel.findById(projectId);
+    if (!project) {
+      throw new NotFoundException('Project not found');
+    }
+
+    project.customStatuses.push(status);
+    return project.save();
+  }
+
+  async updateCustomStatus(projectId: string, oldStatus: string, newStatus: string): Promise<Project> {
+    const project = await this.projectModel.findById(projectId);
+    if (!project) {
+      throw new NotFoundException('Project not found');
+    }
+
+    const index = project.customStatuses.indexOf(oldStatus);
+    if (index === -1) {
+      throw new NotFoundException('Status not found');
+    }
+
+    project.customStatuses[index] = newStatus;
+    return project.save();
+  }
+
+  async deleteCustomStatus(projectId: string, status: string): Promise<Project> {
+    const project = await this.projectModel.findById(projectId);
+    if (!project) {
+      throw new NotFoundException('Project not found');
+    }
+
+    project.customStatuses = project.customStatuses.filter(s => s !== status);
+    return project.save();
+  }
 }

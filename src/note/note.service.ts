@@ -39,6 +39,25 @@ export class NoteService {
       existingNote.description = updateNoteDto.description;
     }
 
+    if (updateNoteDto.todos) {
+      updateNoteDto.todos.forEach((updatedTodo) => {
+        const todo = existingNote.todos.id(updatedTodo._id);
+        if (todo) {
+          if (updatedTodo.title) {
+            todo.title = updatedTodo.title;
+          }
+          if (updatedTodo.description) {
+            todo.description = updatedTodo.description;
+          }
+          if (updatedTodo.isCompleted !== undefined) {
+            todo.isCompleted = updatedTodo.isCompleted;
+          }
+        } else {
+          existingNote.todos.push(updatedTodo);
+        }
+      });
+    }
+
     return existingNote.save();
   }
 

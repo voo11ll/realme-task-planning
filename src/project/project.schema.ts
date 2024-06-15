@@ -15,6 +15,9 @@ export class Project extends Document {
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Task' }] })
   tasks: Types.ObjectId[];
+
+  @Prop({ type: [String], default: [] })
+  customStatuses: string[];
 }
 
 export const ProjectSchema = SchemaFactory.createForClass(Project);
