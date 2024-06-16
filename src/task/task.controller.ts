@@ -1,6 +1,8 @@
 import { Controller, Post, Patch, Delete, Get, Body, Param, UseGuards, Request, Query, NotFoundException } from '@nestjs/common';
 import { TaskService } from './task.service';
 import { AuthGuard } from '@nestjs/passport';
+import { CreateNoteDto } from '../note/dto/create-note.dto';
+import { UpdateNoteDto } from '../note/dto/update-note.dto';
 
 @Controller('task')
 @UseGuards(AuthGuard())
@@ -81,10 +83,31 @@ export class TaskController {
     return { statuses };
   }
 
-  // @Get('/project/:projectId/users')
-  // async getProjectUsers(@Param('projectId') projectId: string) {
-  //   const users = await this.taskService.getProjectUsers(projectId);
-  //   return { users };
-  // }
-}
+  @Post('/:taskId/note')
+  async addNoteToTask(
+    @Param('taskId') taskId: string,
+    @Body() createNoteDto: CreateNoteDto,
+  ) {
+    const task = await this.taskService.addNoteToTask(taskId, createNoteDto);
+    return { message: 'Note added to task successfully', task };
+  }
 
+  @Patch('/:taskId/note/:noteId')
+  async updateNoteInTask(
+    @Param('taskId') taskId: string,
+    @Param('noteId') noteId: string,
+    @Body() updateNoteDto: UpdateNoteDto,
+  ) {
+    const task = await this.taskService.updateNoteInTask(taskId, noteId, updateNoteDto);
+    return { message: 'Note updated successfully', task };
+  }
+
+  @Delete('/:taskId/note/:noteId')
+  async deleteNoteFromTask(
+    @Param('taskId') taskId: string,
+    @Param('noteId') noteId: string,
+  ) {
+    const task = await this.taskService.deleteNoteFromTask(taskId, noteId);
+    return { message: 'Note deleted successfully', task };
+  }
+}
