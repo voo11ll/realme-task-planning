@@ -243,4 +243,17 @@ async deleteNoteFromTask(taskId: string, noteId: string): Promise<Task> {
     note.remove();
   return task.save();
   }
+
+  async updateTaskStatus(taskId: string, status: string): Promise<Task> {
+    const task = await this.taskModel.findById(taskId);
+    if (!task) {
+      throw new NotFoundException('Task not found');
+    }
+  
+    await this.validateStatus(task.project.toString(), status);
+  
+    task.status = status;
+    return task.save();
+  }
+
 }

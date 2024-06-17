@@ -110,4 +110,13 @@ export class TaskController {
     const task = await this.taskService.deleteNoteFromTask(taskId, noteId);
     return { message: 'Note deleted successfully', task };
   }
+
+  @Patch('/:taskId/status')
+  async updateTaskStatus(
+    @Param('taskId') taskId: string,
+    @Body('status') status: string,
+  ) {
+    const task = await this.taskService.updateTaskStatus(taskId, status);
+    return { message: 'Task status updated successfully', task };
+}
 }
