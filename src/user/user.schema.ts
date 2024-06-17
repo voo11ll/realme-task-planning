@@ -22,6 +22,7 @@ export class User extends Document {
 
   @Prop()
   token: string; // Добавьте свойство token
+  static _id: User & { _id: import("mongoose").Types.ObjectId; };
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

@@ -6,7 +6,7 @@ import { User } from '../user/user.schema';
 import { Project } from '../project/project.schema';
 import { CreateNoteDto } from '../note/dto/create-note.dto';
 import { UpdateNoteDto } from '../note/dto/update-note.dto';
-import { Note } from 'src/note/note.schema';
+import { Note } from '../note/note.schema';
 
 @Injectable()
 export class TaskService {
@@ -84,7 +84,7 @@ export class TaskService {
       subtasks,
       status,
       notes,
-      assignee: assignee ? assignee._id : undefined,
+      assignee: assignee ? assignee.email : undefined,
       project: projectId ? new Types.ObjectId(projectId) : undefined,
       isPersonal: isPersonal || false,
       viewType,
@@ -112,7 +112,7 @@ export class TaskService {
     }
 
     if (updateData.assigneeEmail) {
-      const assignee = await this.userModel.findOne({ email: updateData.assigneeEmail });
+      let assignee = await this.userModel.findOne({ email: updateData.assigneeEmail });
       if (!assignee) {
         throw new NotFoundException('Assignee not found');
       }
@@ -122,18 +122,19 @@ export class TaskService {
           throw new NotFoundException('Assignee not in the project');
         }
       }
-      task.assignee = assignee._id;
+      assignee = User._id;
     }
 
     Object.assign(task, updateData);
-    return task.save();
+    const updatedTask = await task.save();
+    return this.populateTask(updatedTask);
   }
 
   async deleteTask(taskId: string): Promise<void> {
     await this.taskModel.findByIdAndDelete(taskId);
   }
 
-  async getProjectTasks(projectId: string, viewType: string): Promise<Task[]> {
+  async getProjectTasks(projectId: string, viewType: string): Promise<any[]> {
     const project = await this.projectModel.findById(projectId);
     if (!project) {
       throw new NotFoundException('Project not found');
@@ -148,11 +149,13 @@ export class TaskService {
       statusFilter = 'backlog';
     }
 
-    return this.taskModel.find({ project: new Types.ObjectId(projectId), status: statusFilter });
+    const tasks = await this.taskModel.find({ project: new Types.ObjectId(projectId), status: statusFilter }).populate('assignee', 'email');
+    return tasks.map(task => this.populateTask(task));
   }
 
-  async getUserPersonalTasks(userId: string): Promise<Task[]> {
-    return this.taskModel.find({ assignee: new Types.ObjectId(userId), isPersonal: true });
+  async getUserPersonalTasks(userId: string): Promise<any[]> {
+    const tasks = await this.taskModel.find({ assignee: new Types.ObjectId(userId), isPersonal: true }).populate('assignee', 'email');
+    return tasks.map(task => this.populateTask(task));
   }
 
   async createCustomStatus(projectId: string, status: string): Promise<void> {
@@ -193,7 +196,7 @@ export class TaskService {
     project.customStatuses = project.customStatuses.filter(s => s !== status);
     await project.save();
   }
-  
+
   async getCustomStatuses(projectId: string): Promise<string[]> {
     const project = await this.projectModel.findById(projectId);
     if (!project) {
@@ -202,69 +205,75 @@ export class TaskService {
     return project.customStatuses;
   }
 
- // Создание заметки в задаче
- async addNoteToTask(taskId: string, createNoteDto: CreateNoteDto): Promise<Task> {
-  const task = await this.taskModel.findById(taskId);
-  if (!task) {
-    throw new NotFoundException('Task not found');
+  async addNoteToTask(taskId: string, createNoteDto: CreateNoteDto): Promise<any> {
+    const task = await this.taskModel.findById(taskId);
+    if (!task) {
+      throw new NotFoundException('Task not found');
+    }
+
+    task.notes.push(createNoteDto as Note);
+    const savedTask = await task.save();
+    return this.populateTask(savedTask);
   }
 
-  task.notes.push(createNoteDto as Note);
-  return task.save();
-}
+  async updateNoteInTask(taskId: string, noteId: string, updateNoteDto: UpdateNoteDto): Promise<any> {
+    const task = await this.taskModel.findById(taskId);
+    if (!task) {
+      throw new NotFoundException('Task not found');
+    }
 
-// Обновление заметки в задаче
-async updateNoteInTask(taskId: string, noteId: string, updateNoteDto: UpdateNoteDto): Promise<Task> {
-  const task = await this.taskModel.findById(taskId);
-  if (!task) {
-    throw new NotFoundException('Task not found');
-  }
+    const note = task.notes.id(noteId);
+    if (!note) {
+      throw new NotFoundException('Note not found');
+    }
 
-  const note = task.notes.id(noteId);
-  if (!note) {
-    throw new NotFoundException('Note not found');
-  }
-
-  if (updateNoteDto.title) {
-    note.title = updateNoteDto.title;
-  }
-  if (updateNoteDto.description) {
-    note.description = updateNoteDto.description;
-  }
-  if (updateNoteDto.todos) {
-    updateNoteDto.todos.forEach(updatedTodo => {
-      const todo = note.todos.id(updatedTodo._id);
-      if (todo) {
-        if (updatedTodo.title) {
-          todo.title = updatedTodo.title;
+    if (updateNoteDto.title) {
+      note.title = updateNoteDto.title;
+    }
+    if (updateNoteDto.description) {
+      note.description = updateNoteDto.description;
+    }
+    if (updateNoteDto.todos) {
+      updateNoteDto.todos.forEach(updatedTodo => {
+        const todo = note.todos.id(updatedTodo._id);
+        if (todo) {
+          if (updatedTodo.title) {
+            todo.title = updatedTodo.title;
+          }
+          if (updatedTodo.description) {
+            todo.description = updatedTodo.description;
+          }
+          if (updatedTodo.isCompleted !== undefined) {
+            todo.isCompleted = updatedTodo.isCompleted;
+          }
+        } else {
+          note.todos.push(updatedTodo as any); // Convert DTO to Todo type
         }
-        if (updatedTodo.description) {
-          todo.description = updatedTodo.description;
-        }
-        if (updatedTodo.isCompleted !== undefined) {
-          todo.isCompleted = updatedTodo.isCompleted;
-        }
-      } else {
-        note.todos.push(updatedTodo as any); // Преобразуем DTO к типу Todo
-      }
-    });
+      });
+    }
+
+    const savedTask = await task.save();
+    return this.populateTask(savedTask);
   }
 
-  return task.save();
-}
+  async deleteNoteFromTask(taskId: string, noteId: string): Promise<any> {
+    const task = await this.taskModel.findById(taskId);
+    if (!task) {
+      throw new NotFoundException('Task not found');
+    }
 
-async deleteNoteFromTask(taskId: string, noteId: string): Promise<Task> {
-  const task = await this.taskModel.findById(taskId);
-  if (!task) {
-    throw new NotFoundException('Task not found');
+    const note = task.notes.id(noteId);
+    if (!note) {
+      throw new NotFoundException('Note not found');
+    }
+
+    note.remove();
+    const savedTask = await task.save();
+    return this.populateTask(savedTask);
   }
 
-  const note = task.notes.id(noteId);
-  if (!note) {
-    throw new NotFoundException('Note not found');
+  private async populateTask(task: any): Promise<any> {
+    await task.populate('assignee', 'email').execPopulate();
+    return task;
   }
-
-  note.remove();
-  return task.save();
-}
 }
