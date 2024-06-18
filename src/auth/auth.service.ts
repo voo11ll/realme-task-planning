@@ -156,9 +156,68 @@ export class AuthService {
     const mailOptions = {
       from: process.env.SMTP_USER,
       to: email,
-      subject: 'Email Verification',
-      text: `Your verification code is: ${verificationCode}`,
-    };
+      subject: 'Realm: Подтверждение e-mail адреса',
+      // text: `Your verification code is: ${verificationCode}`,
+      html: `
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en-GB">
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+   <title>Email confirm Link</title>
+   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+</head>
+
+<style type="text/css">
+   a[x-apple-data-detectors] {color: inherit !important;}
+</style>
+
+<body style="margin: 0; padding: 0; font-family: 'Arial' !important; background: #F2F2F2;">
+   <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="border-right: 20px solid transparent; border-left: 20px solid transparent; font-size: 16px;">
+      <tr>
+         <td style="padding: 20px 0 30px 0;">
+            <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse; border: 0;">
+
+               <tbody style="background: #FFFFFF; box-shadow: 0px 40px 100px -40px rgba(0, 0, 0, 0.2);">
+                  <tr>
+                     <td style="padding: 10px 20px;">
+                        <table style="width: 100%;">
+                           <tbody>
+                              <tr>
+                                 <th colspan="2" align="center" style="width: 500px; text-align: center; width: 355px;font-size: 22px;font-weight: 500;letter-spacing: 0.02em; padding-top: 25px; color: #000;">
+                                    Вам необходимо подтвердить свой адрес электронной почты
+                              </tr>                              
+                           </tbody>
+                        </table>
+                     </td>
+                  </tr>
+
+                  <tr align="center">
+                     <td style="padding: 0 20px;">
+                        <span style="width: 500px; padding: 25px 0px 25px 0px; display: block; opacity: 0.5;"><span style="height: 1px; width: 100%; background: #DDDDDD; display: block;"></span></span>
+                     </td>
+                  </tr>
+
+                  <tr align="center">
+                     <td>
+                        <p style="font-size: 15px; line-height: 17px; text-align: center; letter-spacing: 0.02em; margin: 0; width: 500px; color: #000!important;">Ниже представлен код, чтобы подтвердить свой адрес электронной почты
+                        </p>
+                     </td>
+                  </tr>
+
+                  <tr align="center">
+                     <td style="padding: 20px 0px;">
+                        <p style="font-size: 15px; line-height: 17px; text-align: center; letter-spacing: 0.02em; margin: 0; width: 500px; color: #000!important;">Ваш код подтверждения: <strong>${verificationCode}</strong></p>
+                     </td>
+                  </tr>
+               </tbody>
+
+            </table>
+         </td>
+      </tr>
+   </table>
+</body>
+</html>
+    `
+};
 
     await transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
